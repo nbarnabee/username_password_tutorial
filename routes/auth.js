@@ -85,6 +85,51 @@ router.post("/logout", function (request, response, next) {
   });
 });
 
-// clicking the "logout" button makes a POST request to "/logout"; this route hears that and, unless there's an error, redirects the user to the root page
+// clicking the "logout" button makes a POST request to "/logout"; this route hears that and, unless there's an error, redirects the user to the root page.  but to be honest it is unclear to me how the actual logout is happening.
+
+router.get("/signup", function (request, response, next) {
+  response.render("signup");
+});
+
+// a simple route that returns the rendered signup page
+
+router.post("/signup", function (request, response, next) {
+  var salt = crypto.randomBytes(16);
+  crypto.pbkdf2(
+    request.body.password,
+    salt,
+    310000,
+    32,
+    "sha256",
+    function (err, hashedPassword) {
+      if (err) {
+        return next(err);
+      }
+      db.run(
+        "INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)",
+        [request.body.username, hashedPassword, salt],
+        function (err) {
+          if (err) {
+            return next(err);
+          }
+          var user = {
+            id: this.lastID,
+            username: request.body.username,
+          };
+          request.login(user, function (err) {
+            if (err) {
+              return next(err);
+            }
+            response.redirect("/");
+          });
+        }
+      );
+    }
+  );
+});
+
+// a route that handles a POST request made to "/signup" (i.e., new user registration)
+// while I don't understand the fine details, it's clear enough what is happening:  the password is salted and hashed according to a particular scheme, and then the user information is inserted into the database as an array containing the username (as entered into the form), the hashed password, and the salt
+// then the user is automatically logged in and redirected to the index
 
 module.exports = router;
