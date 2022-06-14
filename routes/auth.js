@@ -45,6 +45,20 @@ passport.use(
 
 // the above configures the LocalStrategy to fetch the user record from the app's database and verify the hashed password that is stored with the record.  If that succeeds, the password is valid and the user is authenticated.
 
+passport.serializeUser(function (user, cb) {
+  process.nextTick(function () {
+    cb(null, { id: user.id, username: user.username });
+  });
+});
+
+passport.deserializeUser(function (user, cb) {
+  process.nextTick(function () {
+    return cb(null, user);
+  });
+});
+
+// the above configures Passport to manage the login session
+
 router.get("/login", function (request, response, next) {
   response.render("login");
 });
