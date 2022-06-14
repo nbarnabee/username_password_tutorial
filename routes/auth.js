@@ -4,6 +4,8 @@ const LocalStrategy = require("passport-local");
 const crypto = require("crypto");
 const db = require("../db");
 
+// the above is the db.js file, which is very neat
+
 const router = express.Router();
 
 passport.use(
@@ -73,5 +75,16 @@ router.post(
 
 // so when someone clicks the "sign in" button, that makes a post request to "/login/password"; the server's response is to run the authentication function.
 // if authentication succeeds, the user is redirected to the index page; on failure, directed back to the login screen
+
+router.post("/logout", function (request, response, next) {
+  request.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    response.redirect("/");
+  });
+});
+
+// clicking the "logout" button makes a POST request to "/logout"; this route hears that and, unless there's an error, redirects the user to the root page
 
 module.exports = router;
